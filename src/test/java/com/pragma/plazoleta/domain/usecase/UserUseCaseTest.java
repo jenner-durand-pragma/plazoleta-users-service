@@ -48,16 +48,21 @@ class UserUseCaseTest {
 
     @BeforeEach
     void setUp() {
-        ownerRole = new Role(2L, "OWNER", "Restaurant owner");
+        ownerRole = Role.builder()
+                .id(2L)
+                .name("OWNER")
+                .description("Restaurant owner")
+                .build();
 
-        validOwner = new User();
-        validOwner.setName("Jenner");
-        validOwner.setLastName("Durand");
-        validOwner.setDocumentNumber("7685968");
-        validOwner.setPhone("+519839485495");
-        validOwner.setBirthDate(LocalDate.now().minusYears(30));
-        validOwner.setEmail("jenner.durand@plazoleta.com");
-        validOwner.setPassword("ExamplePassword123");
+        validOwner = User.builder()
+                .name("Jenner")
+                .lastName("Durand")
+                .documentNumber("7685968")
+                .phone("+519839485495")
+                .birthDate(LocalDate.now().minusYears(30))
+                .email("jenner.durand@plazoleta.com")
+                .password("ExamplePassword123")
+                .build();
     }
 
     @Test
@@ -150,8 +155,8 @@ class UserUseCaseTest {
     @Test
     @DisplayName("Should encrypt password before persisting the user")
     void shouldEncryptPasswordBeforePersisting() {
-        String rawPassword = validOwner.getPassword();
-        String encodedPassword = "$2a$10$encodedHashHere";
+        var rawPassword = validOwner.getPassword();
+        var encodedPassword = "$2a$10$hashedPassword";
 
         when(userPersistencePort
                 .existsByEmail(anyString()))
