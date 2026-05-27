@@ -23,5 +23,5 @@ public class User {
     private String password;
     private Role role;
 
-    private static final Integer MINIMUM_AGE = 18;
+    public static final Integer MINIMUM_AGE = 18;
 }
