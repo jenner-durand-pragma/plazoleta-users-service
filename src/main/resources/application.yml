@@ -1,15 +1,35 @@
 server:
-  port: 8081
+  port: ${SERVER_PORT:8091}
 
 spring:
+  application:
+    name: plazoleta-users-service
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
   datasource:
-    url: jdbc:mysql://localhost:3306/plazoleta
-    username: root
-    password: 1234
-
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/db_plazoleta_users?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    username: ${SPRING_DATASOURCE_USERNAME:plazoleta}
+    password: ${SPRING_DATASOURCE_PASSWORD:plazoletapass}
+    driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
-appDescription: "Pragma Plazoleta"
+    show-sql: ${JPA_SHOW_SQL:true}
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+
+security:
+  jwt:
+    secret: ${SECURITY_JWT_SECRET:c2VjcmV0by1zdXBlci1sYXJnby1kZS0yNTYtYml0cy1taW5pbW8tcGFyYS1obWFjLXNoYTI1Ng==}
+    expiration-ms: ${SECURITY_JWT_EXPIRATION_MS:86400000}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+appDescription: "Pragma Plazoleta - Users Service"
 appVersion: "1.0.0"
