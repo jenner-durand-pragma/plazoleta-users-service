@@ -7,7 +7,7 @@ public class RoleNotFoundException extends NotFoundException {
 
     private static final String ERROR_MESSAGE = "Role not found.";
 
-    protected RoleNotFoundException(Long roleId) {
+    public RoleNotFoundException(Long roleId) {
         super(ERROR_MESSAGE, Role.class.getSimpleName(), roleId);
     }
 }
