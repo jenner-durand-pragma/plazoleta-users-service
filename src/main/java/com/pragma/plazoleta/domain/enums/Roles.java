@@ -2,7 +2,6 @@ package com.pragma.plazoleta.domain.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 @Getter
 @AllArgsConstructor
