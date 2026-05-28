@@ -5,6 +5,7 @@ import com.pragma.plazoleta.domain.enums.Roles;
 import com.pragma.plazoleta.domain.exception.user.DocumentNumberAlreadyExistsException;
 import com.pragma.plazoleta.domain.exception.user.EmailAlreadyExistsException;
 import com.pragma.plazoleta.domain.exception.user.RoleNotFoundException;
+import com.pragma.plazoleta.domain.exception.user.UserNotFoundException;
 import com.pragma.plazoleta.domain.model.Role;
 import com.pragma.plazoleta.domain.model.User;
 import com.pragma.plazoleta.domain.spi.IPasswordEncoderPort;
@@ -34,7 +35,12 @@ public class UserUseCase implements IUserServicePort {
 
     @Override
     public User getUserById(Long id) {
-        return null;
+        var user = userPersistencePort.findById(id);
+        if (user == null) {
+            throw new UserNotFoundException(id);
+        }
+
+        return user;
     }
 
     private void validateEmailUniqueness(String email) {
