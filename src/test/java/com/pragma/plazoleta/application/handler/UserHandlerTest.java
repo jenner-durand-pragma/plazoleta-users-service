@@ -96,4 +96,16 @@ class UserHandlerTest {
         assertThat(result.getRoleName()).isEqualTo(savedUser.getRole().getName());
         assertThat(result.getEmail()).isEqualTo(savedUser.getEmail());
     }
+
+    @Test
+    @DisplayName("Should return user by id")
+    void shouldReturnUserById() {
+        when(userServicePort.getUserById(any(Long.class))).thenReturn(savedUser);
+
+        var result = userHandler.getUserById(savedUser.getId());
+
+        assertThat(result).isNotNull();
+        assertThat(result.getEmail()).isEqualTo(savedUser.getEmail());
+        assertThat(result.getRoleName()).isEqualTo("OWNER");
+    }
 }
