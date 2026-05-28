@@ -66,8 +66,11 @@ class UserUseCaseTest {
     }
 
     @Test
-    @DisplayName("Should create an owner successfully when all data is valid")
+    @DisplayName("Should create an owner successfully, assigning role and encrypting password")
     void shouldCreateOwnerSuccessfullyWhenAllDataIsValid() {
+        var rawPassword = validOwner.getPassword();
+        var encodedPassword = "$2a$10$hashedPassword";
+
         when(userPersistencePort
                 .existsByEmail(validOwner.getEmail()))
                 .thenReturn(false);
@@ -78,19 +81,25 @@ class UserUseCaseTest {
                 .findByName(Roles.OWNER.getName()))
                 .thenReturn(ownerRole);
         when(passwordEncoderPort
-                .encode(validOwner.getPassword()))
-                .thenReturn("$2a$10$hashedPassword");
+                .encode(rawPassword))
+                .thenReturn(encodedPassword);
         when(userPersistencePort
                 .save(any(User.class)))
                 .thenAnswer(inv -> inv.getArgument(0));
 
         var result = userUseCase.createOwner(validOwner);
 
-        assertThat(result).isNotNull();
-        assertThat(result.getRole()).isEqualTo(ownerRole);
-        assertThat(result.getPassword()).isEqualTo("$2a$10$hashedPassword");
-
+        verify(passwordEncoderPort).encode(rawPassword);
         verify(userPersistencePort).save(any(User.class));
+
+        assertThat(result).isNotNull();
+
+        assertThat(result.getEmail()).isEqualTo(validOwner.getEmail());
+        assertThat(result.getPassword()).isEqualTo(encodedPassword);
+
+        assertThat(result.getRole()).isNotNull();
+        assertThat(result.getRole().getName()).isEqualTo(Roles.OWNER.getName());
+        assertThat(result.getRole()).isEqualTo(ownerRole);
     }
 
     @Test
@@ -150,61 +159,5 @@ class UserUseCaseTest {
                 .isInstanceOf(RoleNotFoundException.class);
 
         verify(userPersistencePort, never()).save(any(User.class));
-    }
-
-    @Test
-    @DisplayName("Should encrypt password before persisting the user")
-    void shouldEncryptPasswordBeforePersisting() {
-        var rawPassword = validOwner.getPassword();
-        var encodedPassword = "$2a$10$hashedPassword";
-
-        when(userPersistencePort
-                .existsByEmail(anyString()))
-                .thenReturn(false);
-        when(userPersistencePort
-                .existsByDocumentNumber(anyString()))
-                .thenReturn(false);
-        when(rolePersistencePort
-                .findByName(Roles.OWNER.getName()))
-                .thenReturn(ownerRole);
-        when(passwordEncoderPort
-                .encode(rawPassword))
-                .thenReturn(encodedPassword);
-        when(userPersistencePort
-                .save(any(User.class)))
-                .thenAnswer(inv -> inv.getArgument(0));
-
-        var result = userUseCase.createOwner(validOwner);
-
-        verify(passwordEncoderPort).encode(rawPassword);
-
-        assertThat(result.getPassword()).isEqualTo(encodedPassword);
-        assertThat(result.getPassword()).isNotEqualTo(rawPassword);
-    }
-
-    @Test
-    @DisplayName("Should assign OWNER role to the created user")
-    void shouldAssignOwnerRoleToCreatedUser() {
-        when(userPersistencePort
-                .existsByEmail(anyString()))
-                .thenReturn(false);
-        when(userPersistencePort
-                .existsByDocumentNumber(anyString()))
-                .thenReturn(false);
-        when(rolePersistencePort
-                .findByName(Roles.OWNER.getName()))
-                .thenReturn(ownerRole);
-        when(passwordEncoderPort
-                .encode(anyString()))
-                .thenReturn("hashed");
-        when(userPersistencePort
-                .save(any(User.class)))
-                .thenAnswer(inv -> inv.getArgument(0));
-
-        var result = userUseCase.createOwner(validOwner);
-
-        assertThat(result).isNotNull();
-        assertThat(result.getRole()).isNotNull();
-        assertThat(result.getRole().getName()).isEqualTo(Roles.OWNER.getName());
     }
 }
