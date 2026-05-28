@@ -23,12 +23,12 @@ public class CreateOwnerRequestDto {
     private String lastName;
 
     @NotBlank(message = "Document number is required")
-    @Pattern(regexp = "^\\D+$", message = "Document number must be numeric only")
+    @Pattern(regexp = "^\\d+$", message = "Document number must be numeric only")
     private String documentNumber;
 
     @NotBlank(message = "Phone is required")
     @Pattern(
-            regexp = "^\\+?\\D{1,13}$",
+            regexp = "^\\+?\\d{1,13}$",
             message = "Phone must be numeric, max 13 characters, optional leading '+'"
     )
     private String phone;
