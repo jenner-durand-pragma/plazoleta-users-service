@@ -9,4 +9,5 @@ public interface IUserPersistencePort {
     Boolean existsByEmail(String email);
     Boolean existsByDocumentNumber(String documentNumber);
 
+    User findById(Long id);
 }
