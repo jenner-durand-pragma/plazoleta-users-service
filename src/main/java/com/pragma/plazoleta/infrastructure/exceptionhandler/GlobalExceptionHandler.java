@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
@@ -126,7 +127,9 @@ public class GlobalExceptionHandler {
             MethodArgumentTypeMismatchException ex,
             WebRequest request
     ) {
-        var required = ex.getRequiredType() == null ? "expected type" : ex.getRequiredType().getSimpleName();
+        var required = Optional.ofNullable(ex.getRequiredType())
+                .map(Class::getSimpleName)
+                .orElse("expected type");
         var message = String.format("Parameter '%s' should be of type %s", ex.getName(), required);
 
         return build(

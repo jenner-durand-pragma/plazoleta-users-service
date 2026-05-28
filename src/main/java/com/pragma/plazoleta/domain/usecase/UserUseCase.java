@@ -33,13 +33,17 @@ public class UserUseCase implements IUserServicePort {
     }
 
     private void validateEmailUniqueness(String email) {
-        if (userPersistencePort.existsByEmail(email)) {
+        var existsByEmail = userPersistencePort.existsByEmail(email);
+
+        if (Boolean.TRUE.equals(existsByEmail)) {
             throw new EmailAlreadyExistsException();
         }
     }
 
     private void validateDocumentNumberUniqueness(String documentNumber) {
-        if (userPersistencePort.existsByDocumentNumber(documentNumber)) {
+        var existsByDocumentNumber = userPersistencePort.existsByDocumentNumber(documentNumber);
+
+        if (Boolean.TRUE.equals(existsByDocumentNumber)) {
             throw new DocumentNumberAlreadyExistsException();
         }
     }
