@@ -11,7 +11,7 @@ import java.util.List;
 public class ErrorResponse {
 
     private LocalDateTime timestamp;
-    private int status;
+    private Integer status;
     private String error;
     private String message;
     private String path;
