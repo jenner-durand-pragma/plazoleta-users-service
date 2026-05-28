@@ -33,6 +33,8 @@ public class UserJpaAdapter implements IUserPersistencePort {
 
     @Override
     public User findById(Long id) {
-        return null;
+        return userRepository.findById(id)
+                .map(userEntityMapper::toModel)
+                .orElse(null);
     }
 }
