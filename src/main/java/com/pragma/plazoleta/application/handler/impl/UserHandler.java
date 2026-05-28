@@ -9,12 +9,11 @@ import com.pragma.plazoleta.application.mapper.IUserResponseMapper;
 import com.pragma.plazoleta.domain.api.IUserServicePort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import javax.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class UserHandler implements IUserHandler {
 
     private final IUserServicePort userServicePort;
@@ -22,6 +21,7 @@ public class UserHandler implements IUserHandler {
     private final IUserResponseMapper userResponseMapper;
 
     @Override
+    @Transactional
     public UserResponseDto createOwner(CreateOwnerRequestDto request) {
         var userToCreate = userRequestMapper.toUser(request);
         var userCreated = userServicePort.createOwner(userToCreate);
