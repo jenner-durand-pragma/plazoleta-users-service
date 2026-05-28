@@ -7,13 +7,12 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum Roles {
 
-    ADMIN(1L, "ADMIN", "Platform administrator"),
-    OWNER(2L, "OWNER", "Restaurant owner"),
-    EMPLOYEE(3L, "EMPLOYEE", "Restaurant employee"),
-    CLIENT(4L, "CLIENT", "Food court client");
+    ADMIN(1L, "ADMIN"),
+    OWNER(2L, "OWNER"),
+    EMPLOYEE(3L, "EMPLOYEE"),
+    CLIENT(4L, "CLIENT");
 
     private final Long id;
     private final String name;
-    private final String description;
 
 }
