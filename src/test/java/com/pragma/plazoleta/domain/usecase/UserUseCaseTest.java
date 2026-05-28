@@ -1,7 +1,11 @@
 package com.pragma.plazoleta.domain.usecase;
 
 import com.pragma.plazoleta.domain.enums.Roles;
-import com.pragma.plazoleta.domain.exception.user.*;
+import com.pragma.plazoleta.domain.exception.user.DocumentNumberAlreadyExistsException;
+import com.pragma.plazoleta.domain.exception.user.EmailAlreadyExistsException;
+import com.pragma.plazoleta.domain.exception.user.RoleNotFoundException;
+import com.pragma.plazoleta.domain.exception.user.UserNotFoundException;
+import com.pragma.plazoleta.domain.exception.user.UserNotOfLegalAgeException;
 import com.pragma.plazoleta.domain.model.Role;
 import com.pragma.plazoleta.domain.model.User;
 import com.pragma.plazoleta.domain.spi.IPasswordEncoderPort;
