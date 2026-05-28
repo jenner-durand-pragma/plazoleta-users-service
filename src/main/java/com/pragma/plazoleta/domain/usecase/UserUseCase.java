@@ -5,16 +5,12 @@ import com.pragma.plazoleta.domain.enums.Roles;
 import com.pragma.plazoleta.domain.exception.user.DocumentNumberAlreadyExistsException;
 import com.pragma.plazoleta.domain.exception.user.EmailAlreadyExistsException;
 import com.pragma.plazoleta.domain.exception.user.RoleNotFoundException;
-import com.pragma.plazoleta.domain.exception.user.UserNotOfLegalAgeException;
 import com.pragma.plazoleta.domain.model.Role;
 import com.pragma.plazoleta.domain.model.User;
 import com.pragma.plazoleta.domain.spi.IPasswordEncoderPort;
 import com.pragma.plazoleta.domain.spi.IRolePersistencePort;
 import com.pragma.plazoleta.domain.spi.IUserPersistencePort;
 import lombok.RequiredArgsConstructor;
-
-import java.time.LocalDate;
-import java.time.Period;
 
 @RequiredArgsConstructor
 public class UserUseCase implements IUserServicePort {
