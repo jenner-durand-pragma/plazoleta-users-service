@@ -75,8 +75,8 @@ class UserHandlerTest {
     }
 
     @Test
-    @DisplayName("Should orchestrate mapping and service successfully to create an owner")
-    void shouldCreateOwnerCoordinatingMappersAndService() {
+    @DisplayName("Should create an owner")
+    void shouldCreateOwner() {
         when(userServicePort.createOwner(any(User.class))).thenReturn(savedUser);
 
         var result = userHandler.createOwner(requestDto);
