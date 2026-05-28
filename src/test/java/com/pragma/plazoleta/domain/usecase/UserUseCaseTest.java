@@ -1,10 +1,7 @@
 package com.pragma.plazoleta.domain.usecase;
 
 import com.pragma.plazoleta.domain.enums.Roles;
-import com.pragma.plazoleta.domain.exception.user.DocumentNumberAlreadyExistsException;
-import com.pragma.plazoleta.domain.exception.user.EmailAlreadyExistsException;
-import com.pragma.plazoleta.domain.exception.user.RoleNotFoundException;
-import com.pragma.plazoleta.domain.exception.user.UserNotOfLegalAgeException;
+import com.pragma.plazoleta.domain.exception.user.*;
 import com.pragma.plazoleta.domain.model.Role;
 import com.pragma.plazoleta.domain.model.User;
 import com.pragma.plazoleta.domain.spi.IPasswordEncoderPort;
@@ -158,5 +155,31 @@ class UserUseCaseTest {
                 .isInstanceOf(RoleNotFoundException.class);
 
         verify(userPersistencePort, never()).save(any(User.class));
+    }
+
+    @Test
+    @DisplayName("Should return the user when it exists")
+    void shouldReturnUserWhenExists() {
+        var existing = User.builder()
+                .id(5L)
+                .email("jenner.durand@plazoleta.com")
+                .role(ownerRole)
+                .build();
+        when(userPersistencePort.findById(5L)).thenReturn(existing);
+
+        var result = userUseCase.getUserById(5L);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo(5L);
+        assertThat(result.getRole().getName()).isEqualTo("OWNER");
+    }
+
+    @Test
+    @DisplayName("Should throw UserNotFoundException when user does not exist")
+    void shouldThrowWhenUserNotFound() {
+        when(userPersistencePort.findById(99L)).thenReturn(null);
+
+        assertThatThrownBy(() -> userUseCase.getUserById(99L))
+                .isInstanceOf(UserNotFoundException.class);
     }
 }
