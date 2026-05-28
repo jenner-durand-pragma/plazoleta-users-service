@@ -75,8 +75,8 @@ class UserHandlerTest {
     }
 
     @Test
-    @DisplayName("Should orchestrate mapping and service successfully to create an owner")
-    void shouldCreateOwnerCoordinatingMappersAndService() {
+    @DisplayName("Should create an owner")
+    void shouldCreateOwner() {
         when(userServicePort.createOwner(any(User.class))).thenReturn(savedUser);
 
         var result = userHandler.createOwner(requestDto);
@@ -95,5 +95,17 @@ class UserHandlerTest {
         assertThat(result.getId()).isEqualTo(savedUser.getId());
         assertThat(result.getRoleName()).isEqualTo(savedUser.getRole().getName());
         assertThat(result.getEmail()).isEqualTo(savedUser.getEmail());
+    }
+
+    @Test
+    @DisplayName("Should return user by id")
+    void shouldReturnUserById() {
+        when(userServicePort.getUserById(any(Long.class))).thenReturn(savedUser);
+
+        var result = userHandler.getUserById(savedUser.getId());
+
+        assertThat(result).isNotNull();
+        assertThat(result.getEmail()).isEqualTo(savedUser.getEmail());
+        assertThat(result.getRoleName()).isEqualTo("OWNER");
     }
 }

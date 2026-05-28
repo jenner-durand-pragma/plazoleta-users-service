@@ -3,6 +3,7 @@ package com.pragma.plazoleta.infrastructure.input.rest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.pragma.plazoleta.application.dto.request.user.CreateOwnerRequestDto;
+import com.pragma.plazoleta.application.dto.response.user.UserInformationResponseDto;
 import com.pragma.plazoleta.application.dto.response.user.UserResponseDto;
 import com.pragma.plazoleta.application.handler.IUserHandler;
 import com.pragma.plazoleta.domain.enums.Roles;
@@ -23,6 +24,7 @@ import java.time.LocalDate;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -154,8 +156,30 @@ class UserRestControllerTest {
     @Test
     @DisplayName("Should return 405 when HTTP method is not supported")
     void shouldReturn405OnUnsupportedMethod() throws Exception {
-        mockMvc.perform(get("/api/v1/users/owner"))
+        mockMvc.perform(delete("/api/v1/users/owner"))
                 .andExpect(status().isMethodNotAllowed())
                 .andExpect(jsonPath("$.status").value(405));
+    }
+
+    @Test
+    @DisplayName("Should return 200 with user info when user exists")
+    void shouldReturn200WithUserInfo() throws Exception {
+        var userInformation = UserInformationResponseDto.builder()
+                .id(10L)
+                .name("Jenner")
+                .lastName("Durand")
+                .documentNumber("76859685")
+                .phone("+51985768594")
+                .email("jenner.durand@plazoleta.com")
+                .roleName("OWNER")
+                .build();
+
+        when(userHandler.getUserById(10L)).thenReturn(userInformation);
+
+        mockMvc.perform(get("/api/v1/users/10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(10))
+                .andExpect(jsonPath("$.roleName").value("OWNER"))
+                .andExpect(jsonPath("$.phone").value("+51985768594"));
     }
 }

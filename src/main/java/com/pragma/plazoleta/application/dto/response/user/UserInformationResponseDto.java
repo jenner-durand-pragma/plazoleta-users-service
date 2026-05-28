@@ -7,14 +7,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
-
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserResponseDto {
+public class UserInformationResponseDto {
 
     @Schema(description = "Unique internal identifier", example = "10")
     private Long id;
@@ -30,9 +28,6 @@ public class UserResponseDto {
 
     @Schema(description = "Phone number", example = "+51985768594")
     private String phone;
-
-    @Schema(description = "Owner's date of birth", example = "2002-09-21")
-    private LocalDate birthDate;
 
     @Schema(description = "Email address", example = "jenner.durand@plazoleta.com")
     private String email;

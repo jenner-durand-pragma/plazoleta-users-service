@@ -96,4 +96,16 @@ public class UserJpaAdapterTest {
         assertThat(userJpaAdapter.existsByDocumentNumber("76859685")).isTrue();
         assertThat(userJpaAdapter.existsByDocumentNumber("00000000")).isFalse();
     }
+
+    @Test
+    @DisplayName("Should return user when id exists")
+    void shouldReturnUserWhenIdExists() {
+        var savedUser = userJpaAdapter.save(buildUser());
+
+        var userFounded = userJpaAdapter.findById(savedUser.getId());
+
+        assertThat(userFounded).isNotNull();
+        assertThat(userFounded.getEmail()).isEqualTo("jenner.durand@plazoleta.com");
+        assertThat(userFounded.getRole().getName()).isEqualTo("OWNER");
+    }
 }
