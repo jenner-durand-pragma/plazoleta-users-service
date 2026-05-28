@@ -13,6 +13,10 @@ public class RoleJpaAdapter implements IRolePersistencePort {
 
     @Override
     public Role findByName(String name) {
-        return null;
+        var roleEntity = roleRepository.findByName(name);
+
+        return roleEntity
+                .map(roleEntityMapper::toModel)
+                .orElse(null);
     }
 }
