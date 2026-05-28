@@ -11,3 +11,6 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
     show-sql: false
+
+appDescription: "Pragma Plazoleta - Users Service Test"
+appVersion: "1.0.0"
