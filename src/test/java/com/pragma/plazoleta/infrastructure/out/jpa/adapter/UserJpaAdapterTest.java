@@ -3,7 +3,9 @@ package com.pragma.plazoleta.infrastructure.out.jpa.adapter;
 import com.pragma.plazoleta.domain.model.Role;
 import com.pragma.plazoleta.domain.model.User;
 import com.pragma.plazoleta.infrastructure.out.jpa.entity.RoleEntity;
+import com.pragma.plazoleta.infrastructure.out.jpa.mapper.IRoleEntityMapperImpl;
 import com.pragma.plazoleta.infrastructure.out.jpa.mapper.IUserEntityMapper;
+import com.pragma.plazoleta.infrastructure.out.jpa.mapper.IUserEntityMapperImpl;
 import com.pragma.plazoleta.infrastructure.out.jpa.repository.IRoleRepository;
 import com.pragma.plazoleta.infrastructure.out.jpa.repository.IUserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,14 +13,14 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Import;
 
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-@ComponentScan(basePackageClasses = IUserEntityMapper.class)
+@Import({IUserEntityMapperImpl.class, IRoleEntityMapperImpl.class})
 public class UserJpaAdapterTest {
 
     @Autowired
