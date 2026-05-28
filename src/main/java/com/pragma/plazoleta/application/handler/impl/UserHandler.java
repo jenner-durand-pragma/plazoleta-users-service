@@ -31,6 +31,8 @@ public class UserHandler implements IUserHandler {
 
     @Override
     public UserInformationResponseDto getUserById(Long id) {
-        return null;
+        var user = userServicePort.getUserById(id);
+
+        return userResponseMapper.toInformationResponse(user);
     }
 }
