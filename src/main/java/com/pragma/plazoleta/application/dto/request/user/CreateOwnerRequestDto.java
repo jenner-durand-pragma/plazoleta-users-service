@@ -27,7 +27,7 @@ public class CreateOwnerRequestDto {
 
     @NotBlank(message = "Document number is required")
     @Pattern(regexp = "^\\d+$", message = "Document number must be numeric only")
-    @Schema(description = "National Identity Document number (Numeric only)", example = "76859685")
+    @Schema(description = "Identity Document number (Numeric only)", example = "76859685")
     private String documentNumber;
 
     @NotBlank(message = "Phone is required")
@@ -45,11 +45,11 @@ public class CreateOwnerRequestDto {
 
     @NotBlank(message = "Email is required")
     @Email(message = "Email format is invalid")
-    @Schema(description = "Valid email address used for authentication", example = "jenner.durand@plazoleta.com")
+    @Schema(description = "Valid email address", example = "jenner.durand@plazoleta.com")
     private String email;
 
     @NotBlank(message = "Password is required")
-    @Schema(description = "Plain text password. It will be encrypted before saving.", example = "SecurePassword123!")
+    @Schema(description = "Plain text password.", example = "SecurePassword123!")
     private String password;
 
 }

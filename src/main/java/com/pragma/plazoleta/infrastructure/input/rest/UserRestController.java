@@ -28,9 +28,8 @@ public class UserRestController {
 
     private final IUserHandler userHandler;
 
-    @Operation(summary = "Create a restaurant owner account",
-            description = "Allows the administrator to register a new owner. " +
-                    "The user is assigned the OWNER role and the password is encrypted with BCrypt.")
+    @Operation(summary = "Create a owner account",
+            description = "Allows to register a new owner.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Owner created successfully"),
 
