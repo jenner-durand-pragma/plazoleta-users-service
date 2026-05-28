@@ -1,28 +1,53 @@
 package com.pragma.plazoleta.infrastructure.configuration;
 
-import com.pragma.plazoleta.domain.api.IObjectServicePort;
-import com.pragma.plazoleta.domain.spi.IObjectPersistencePort;
-import com.pragma.plazoleta.domain.usecase.ObjectUseCase;
-import com.pragma.plazoleta.infrastructure.out.jpa.adapter.ObjectJpaAdapter;
-import com.pragma.plazoleta.infrastructure.out.jpa.mapper.IObjectEntityMapper;
-import com.pragma.plazoleta.infrastructure.out.jpa.repository.IObjectRepository;
+import com.pragma.plazoleta.domain.api.IUserServicePort;
+import com.pragma.plazoleta.domain.spi.IPasswordEncoderPort;
+import com.pragma.plazoleta.domain.spi.IRolePersistencePort;
+import com.pragma.plazoleta.domain.spi.IUserPersistencePort;
+import com.pragma.plazoleta.domain.usecase.UserUseCase;
+import com.pragma.plazoleta.infrastructure.out.jpa.adapter.RoleJpaAdapter;
+import com.pragma.plazoleta.infrastructure.out.jpa.adapter.UserJpaAdapter;
+import com.pragma.plazoleta.infrastructure.out.jpa.mapper.IRoleEntityMapper;
+import com.pragma.plazoleta.infrastructure.out.jpa.mapper.IUserEntityMapper;
+import com.pragma.plazoleta.infrastructure.out.jpa.repository.IRoleRepository;
+import com.pragma.plazoleta.infrastructure.out.jpa.repository.IUserRepository;
+import com.pragma.plazoleta.infrastructure.out.security.passwordencoder.BCryptPasswordEncoderAdapter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
 @RequiredArgsConstructor
 public class BeanConfiguration {
-    private final IObjectRepository objectRepository;
-    private final IObjectEntityMapper objectEntityMapper;
+
+    private final IUserRepository userRepository;
+    private final IUserEntityMapper userEntityMapper;
+    private final IRoleRepository roleRepository;
+    private final IRoleEntityMapper roleEntityMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Bean
-    public IObjectPersistencePort objectPersistencePort() {
-        return new ObjectJpaAdapter(objectRepository, objectEntityMapper);
+    public IUserPersistencePort userPersistencePort() {
+        return new UserJpaAdapter(userRepository, userEntityMapper);
     }
 
     @Bean
-    public IObjectServicePort objectServicePort() {
-        return new ObjectUseCase(objectPersistencePort());
+    public IRolePersistencePort rolePersistencePort() {
+        return new RoleJpaAdapter(roleRepository, roleEntityMapper);
+    }
+
+    @Bean
+    public IPasswordEncoderPort passwordEncoderPort() {
+        return new BCryptPasswordEncoderAdapter(passwordEncoder);
+    }
+
+    @Bean
+    public IUserServicePort userServicePort() {
+        return new UserUseCase(
+                userPersistencePort(),
+                rolePersistencePort(),
+                passwordEncoderPort()
+        );
     }
 }
