@@ -25,7 +25,7 @@ public class UserUseCase implements IUserServicePort {
 
     @Override
     public User createOwner(User user) {
-        validateLegalAge(user.getBirthDate());
+        user.validateLegalAge();
         validateEmailUniqueness(user.getEmail());
         validateDocumentNumberUniqueness(user.getDocumentNumber());
 
@@ -34,14 +34,6 @@ public class UserUseCase implements IUserServicePort {
         user.setPassword(passwordEncoderPort.encode(user.getPassword()));
 
         return userPersistencePort.save(user);
-    }
-
-    private void validateLegalAge(LocalDate birthDate) {
-        var age = Period.between(birthDate, LocalDate.now()).getYears();
-
-        if (age < User.MINIMUM_AGE) {
-            throw new UserNotOfLegalAgeException();
-        }
     }
 
     private void validateEmailUniqueness(String email) {
