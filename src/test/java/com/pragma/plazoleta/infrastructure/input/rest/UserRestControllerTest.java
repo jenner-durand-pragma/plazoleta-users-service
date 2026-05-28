@@ -24,8 +24,7 @@ import java.time.LocalDate;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -155,7 +154,7 @@ class UserRestControllerTest {
     @Test
     @DisplayName("Should return 405 when HTTP method is not supported")
     void shouldReturn405OnUnsupportedMethod() throws Exception {
-        mockMvc.perform(get("/api/v1/users/owner"))
+        mockMvc.perform(delete("/api/v1/users/owner"))
                 .andExpect(status().isMethodNotAllowed())
                 .andExpect(jsonPath("$.status").value(405));
     }
