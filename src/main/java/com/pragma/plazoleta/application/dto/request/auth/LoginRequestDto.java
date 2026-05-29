@@ -19,13 +19,13 @@ public class LoginRequestDto {
 
     @NotBlank(message = "Email is required")
     @Email(message = "Email format is invalid")
-    @Schema(description = "Registered user email", example = "owner@plazoleta.com")
+    @Schema(description = "Registered user email", example = "jenner.durand@plazoleta.com")
     private String email;
 
     @NotBlank(message = "Password is required")
     @Schema(
-            description = "User password (plain, will be matched against the BCrypt hash)",
-            example = "OwnerPass123$"
+            description = "User password",
+            example = "PlainPassword123$"
     )
     private String password;
 }

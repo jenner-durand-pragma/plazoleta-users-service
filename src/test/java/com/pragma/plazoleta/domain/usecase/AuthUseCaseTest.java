@@ -36,8 +36,8 @@ class AuthUseCaseTest {
     private AuthUseCase authUseCase;
 
     private User existingUser;
-    private static final String EMAIL = "owner@plazoleta.com";
-    private static final String RAW_PASSWORD = "OwnerPass123$";
+    private static final String EMAIL = "jenner.durand@plazoleta.com";
+    private static final String RAW_PASSWORD = "PlainPassword123$";
     private static final String HASHED_PASSWORD = "$2a$10$hashedPassword";
 
     @BeforeEach
