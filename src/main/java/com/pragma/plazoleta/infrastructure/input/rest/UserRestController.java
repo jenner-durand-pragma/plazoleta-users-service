@@ -4,6 +4,7 @@ import com.pragma.plazoleta.application.dto.request.user.CreateOwnerRequestDto;
 import com.pragma.plazoleta.application.dto.response.user.UserInformationResponseDto;
 import com.pragma.plazoleta.application.dto.response.user.UserResponseDto;
 import com.pragma.plazoleta.application.handler.IUserHandler;
+import com.pragma.plazoleta.infrastructure.configuration.security.annotation.IsAdmin;
 import com.pragma.plazoleta.infrastructure.exceptionhandler.common.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -14,6 +15,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,6 +33,7 @@ public class UserRestController {
 
     private final IUserHandler userHandler;
 
+    @IsAdmin
     @Operation(summary = "Create a owner account",
             description = "Allows to register a new owner.")
     @ApiResponses(value = {
