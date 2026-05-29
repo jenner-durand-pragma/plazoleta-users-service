@@ -8,6 +8,7 @@ import com.pragma.plazoleta.domain.spi.ITokenServicePort;
 import com.pragma.plazoleta.domain.spi.IUserPersistencePort;
 import com.pragma.plazoleta.domain.usecase.AuthUseCase;
 import com.pragma.plazoleta.domain.usecase.UserUseCase;
+import com.pragma.plazoleta.infrastructure.configuration.security.token.ITokenValidationPort;
 import com.pragma.plazoleta.infrastructure.out.security.jwt.configuration.JwtProperties;
 import com.pragma.plazoleta.infrastructure.out.jpa.adapter.RoleJpaAdapter;
 import com.pragma.plazoleta.infrastructure.out.jpa.adapter.UserJpaAdapter;
@@ -50,16 +51,28 @@ public class BeanConfiguration {
     }
 
     @Bean
-    public ITokenServicePort tokenServicePort() {
+    public JwtAdapter jwtAdapter() {
         return new JwtAdapter(jwtProperties);
     }
 
     @Bean
-    public IAuthServicePort authServicePort() {
+    public ITokenServicePort tokenServicePort(JwtAdapter jwtAdapter) {
+        return jwtAdapter;
+    }
+
+    @Bean
+    public ITokenValidationPort tokenValidationPort(JwtAdapter jwtAdapter) {
+        return jwtAdapter;
+    }
+
+    @Bean
+    public IAuthServicePort authServicePort(
+            ITokenServicePort tokenServicePort
+    ) {
         return new AuthUseCase(
                 userPersistencePort(),
                 passwordEncoderPort(),
-                tokenServicePort()
+                tokenServicePort
         );
     }
 

@@ -2,6 +2,7 @@ package com.pragma.plazoleta.infrastructure.out.security.jwt;
 
 import com.pragma.plazoleta.domain.model.Role;
 import com.pragma.plazoleta.domain.model.User;
+import com.pragma.plazoleta.infrastructure.configuration.security.token.exception.InvalidTokenException;
 import com.pragma.plazoleta.infrastructure.out.security.jwt.configuration.JwtProperties;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -17,6 +18,7 @@ import java.time.LocalDate;
 import java.util.Base64;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -79,5 +81,32 @@ class JwtAdapterTest {
         assertThat(claims.getIssuedAt()).isNotNull();
         assertThat(claims.getExpiration()).isNotNull();
         assertThat(claims.getExpiration()).isAfter(claims.getIssuedAt());
+    }
+
+    @Test
+    @DisplayName("Should successfully validate a token and return the payload")
+    void shouldValidateTokenAndReturnPayload() {
+        when(jwtProperties.getSecret()).thenReturn(BASE64_SECRET);
+        when(jwtProperties.getExpirationMs()).thenReturn(1000L * 60L * 60L);
+
+        var validToken = jwtAdapter.generateToken(validUser);
+        var payload = jwtAdapter.validate(validToken);
+
+        assertThat(payload).isNotNull();
+        assertThat(payload.getEmail()).isEqualTo("jenner.durand@plazoleta.com");
+        assertThat(payload.getUserId()).isEqualTo(10L);
+        assertThat(payload.getRole()).isEqualTo("OWNER");
+    }
+
+    @Test
+    @DisplayName("Should throw InvalidTokenException when the token is malformed or invalid")
+    void shouldThrowExceptionWhenTokenIsInvalid() {
+        when(jwtProperties.getSecret()).thenReturn(BASE64_SECRET);
+
+        var invalidToken = "invalid.jwt";
+
+        assertThatThrownBy(() -> jwtAdapter.validate(invalidToken))
+                .isInstanceOf(InvalidTokenException.class)
+                .hasMessageContaining("Invalid or expired token");
     }
 }
