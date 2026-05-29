@@ -31,7 +31,6 @@ public class BeanConfiguration {
     private final IUserEntityMapper userEntityMapper;
     private final IRoleRepository roleRepository;
     private final IRoleEntityMapper roleEntityMapper;
-    private final PasswordEncoder passwordEncoder;
 
     private final JwtProperties jwtProperties;
 
@@ -46,7 +45,7 @@ public class BeanConfiguration {
     }
 
     @Bean
-    public IPasswordEncoderPort passwordEncoderPort() {
+    public IPasswordEncoderPort passwordEncoderPort(PasswordEncoder passwordEncoder) {
         return new BCryptPasswordEncoderAdapter(passwordEncoder);
     }
 
@@ -67,21 +66,24 @@ public class BeanConfiguration {
 
     @Bean
     public IAuthServicePort authServicePort(
-            ITokenServicePort tokenServicePort
+            ITokenServicePort tokenServicePort,
+            IPasswordEncoderPort passwordEncoderPort
     ) {
         return new AuthUseCase(
                 userPersistencePort(),
-                passwordEncoderPort(),
+                passwordEncoderPort,
                 tokenServicePort
         );
     }
 
     @Bean
-    public IUserServicePort userServicePort() {
+    public IUserServicePort userServicePort(
+            IPasswordEncoderPort passwordEncoderPort
+    ) {
         return new UserUseCase(
                 userPersistencePort(),
                 rolePersistencePort(),
-                passwordEncoderPort()
+                passwordEncoderPort
         );
     }
 }
