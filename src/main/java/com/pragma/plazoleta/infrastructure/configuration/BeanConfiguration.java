@@ -1,16 +1,21 @@
 package com.pragma.plazoleta.infrastructure.configuration;
 
+import com.pragma.plazoleta.domain.api.IAuthServicePort;
 import com.pragma.plazoleta.domain.api.IUserServicePort;
 import com.pragma.plazoleta.domain.spi.IPasswordEncoderPort;
 import com.pragma.plazoleta.domain.spi.IRolePersistencePort;
+import com.pragma.plazoleta.domain.spi.ITokenServicePort;
 import com.pragma.plazoleta.domain.spi.IUserPersistencePort;
+import com.pragma.plazoleta.domain.usecase.AuthUseCase;
 import com.pragma.plazoleta.domain.usecase.UserUseCase;
+import com.pragma.plazoleta.infrastructure.configuration.security.JwtProperties;
 import com.pragma.plazoleta.infrastructure.out.jpa.adapter.RoleJpaAdapter;
 import com.pragma.plazoleta.infrastructure.out.jpa.adapter.UserJpaAdapter;
 import com.pragma.plazoleta.infrastructure.out.jpa.mapper.IRoleEntityMapper;
 import com.pragma.plazoleta.infrastructure.out.jpa.mapper.IUserEntityMapper;
 import com.pragma.plazoleta.infrastructure.out.jpa.repository.IRoleRepository;
 import com.pragma.plazoleta.infrastructure.out.jpa.repository.IUserRepository;
+import com.pragma.plazoleta.infrastructure.out.security.jwt.JwtAdapter;
 import com.pragma.plazoleta.infrastructure.out.security.passwordencoder.BCryptPasswordEncoderAdapter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -27,6 +32,8 @@ public class BeanConfiguration {
     private final IRoleEntityMapper roleEntityMapper;
     private final PasswordEncoder passwordEncoder;
 
+    private final JwtProperties jwtProperties;
+
     @Bean
     public IUserPersistencePort userPersistencePort() {
         return new UserJpaAdapter(userRepository, userEntityMapper);
@@ -40,6 +47,20 @@ public class BeanConfiguration {
     @Bean
     public IPasswordEncoderPort passwordEncoderPort() {
         return new BCryptPasswordEncoderAdapter(passwordEncoder);
+    }
+
+    @Bean
+    public ITokenServicePort tokenServicePort() {
+        return new JwtAdapter(jwtProperties);
+    }
+
+    @Bean
+    public IAuthServicePort authServicePort() {
+        return new AuthUseCase(
+                userPersistencePort(),
+                passwordEncoderPort(),
+                tokenServicePort()
+        );
     }
 
     @Bean
