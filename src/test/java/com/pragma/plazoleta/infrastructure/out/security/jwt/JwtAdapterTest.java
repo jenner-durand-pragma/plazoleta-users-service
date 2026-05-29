@@ -3,7 +3,6 @@ package com.pragma.plazoleta.infrastructure.out.security.jwt;
 import com.pragma.plazoleta.domain.model.Role;
 import com.pragma.plazoleta.domain.model.User;
 import com.pragma.plazoleta.infrastructure.configuration.security.JwtProperties;
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.junit.jupiter.api.BeforeEach;
