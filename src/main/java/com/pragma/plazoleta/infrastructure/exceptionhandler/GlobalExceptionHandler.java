@@ -3,6 +3,7 @@ package com.pragma.plazoleta.infrastructure.exceptionhandler;
 import com.pragma.plazoleta.domain.exception.BusinessRuleException;
 import com.pragma.plazoleta.domain.exception.ConflictException;
 import com.pragma.plazoleta.domain.exception.NotFoundException;
+import com.pragma.plazoleta.domain.exception.UnauthorizedException;
 import com.pragma.plazoleta.infrastructure.exceptionhandler.common.ErrorResponse;
 import com.pragma.plazoleta.infrastructure.exceptionhandler.common.FieldErrorDetail;
 import org.springframework.http.HttpStatus;
@@ -49,6 +50,15 @@ public class GlobalExceptionHandler {
             WebRequest request
     ) {
         return build(HttpStatus.NOT_FOUND, ex.getMessage(), request, Collections.emptyList());
+    }
+
+    // ─── 401 Unauthorized (invalid credentials) ───
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<ErrorResponse> handleUnauthorized(
+            UnauthorizedException ex,
+            WebRequest request
+    ) {
+        return build(HttpStatus.UNAUTHORIZED, ex.getMessage(), request, Collections.emptyList());
     }
 
     // ─── 422 Unprocessable Entity ───
