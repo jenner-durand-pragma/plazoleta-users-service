@@ -17,6 +17,11 @@ public class AuthHandler implements IAuthHandler {
 
     @Override
     public LoginResponseDto login(LoginRequestDto request) {
-        return null;
+        var token = authServicePort.login(
+                request.getEmail(),
+                request.getPassword()
+        );
+
+        return new LoginResponseDto(token, BEARER);
     }
 }
