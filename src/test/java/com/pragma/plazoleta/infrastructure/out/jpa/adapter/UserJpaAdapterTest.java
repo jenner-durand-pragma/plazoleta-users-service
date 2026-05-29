@@ -108,4 +108,16 @@ public class UserJpaAdapterTest {
         assertThat(userFounded.getEmail()).isEqualTo("jenner.durand@plazoleta.com");
         assertThat(userFounded.getRole().getName()).isEqualTo("OWNER");
     }
+
+    @Test
+    @DisplayName("Should return user when email exists")
+    void shouldReturnUserWhenEmailExists() {
+        var savedUser = userJpaAdapter.save(buildUser());
+
+        var userFounded = userJpaAdapter.findByEmail(savedUser.getEmail());
+
+        assertThat(userFounded).isNotNull();
+        assertThat(userFounded.getDocumentNumber()).isEqualTo("76859685");
+        assertThat(userFounded.getRole().getName()).isEqualTo("OWNER");
+    }
 }
