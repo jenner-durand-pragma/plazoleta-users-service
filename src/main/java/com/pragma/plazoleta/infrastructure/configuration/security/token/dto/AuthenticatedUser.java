@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class TokenPayload {
+public class AuthenticatedUser {
 
     private final Long userId;
     private final String email;

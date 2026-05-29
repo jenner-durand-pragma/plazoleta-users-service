@@ -4,7 +4,7 @@ import com.pragma.plazoleta.domain.model.User;
 import com.pragma.plazoleta.domain.spi.ITokenServicePort;
 import com.pragma.plazoleta.infrastructure.configuration.security.token.ITokenValidationPort;
 import com.pragma.plazoleta.infrastructure.configuration.security.token.exception.InvalidTokenException;
-import com.pragma.plazoleta.infrastructure.configuration.security.token.dto.TokenPayload;
+import com.pragma.plazoleta.infrastructure.configuration.security.token.dto.AuthenticatedUser;
 import com.pragma.plazoleta.infrastructure.out.security.jwt.configuration.JwtProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -41,10 +41,10 @@ public class JwtAdapter implements ITokenServicePort, ITokenValidationPort {
     }
 
     @Override
-    public TokenPayload validate(String token) {
+    public AuthenticatedUser validate(String token) {
         try {
             var claims = parseClaims(token);
-            return new TokenPayload(
+            return new AuthenticatedUser(
                     claims.get(CLAIM_USER_ID, Long.class),
                     claims.getSubject(),
                     claims.get(CLAIM_ROLE, String.class)
