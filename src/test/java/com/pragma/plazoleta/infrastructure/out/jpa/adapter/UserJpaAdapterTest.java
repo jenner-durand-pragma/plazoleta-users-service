@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @Import({IUserEntityMapperImpl.class, IRoleEntityMapperImpl.class})
-public class UserJpaAdapterTest {
+class UserJpaAdapterTest {
 
     @Autowired
     private IUserRepository userRepository;
