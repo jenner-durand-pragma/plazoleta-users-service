@@ -1,4 +1,4 @@
-package com.pragma.plazoleta.infrastructure.configuration.security;
+package com.pragma.plazoleta.infrastructure.out.security.jwt.configuration;
 
 import lombok.Getter;
 import lombok.Setter;

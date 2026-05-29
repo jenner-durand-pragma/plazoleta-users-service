@@ -2,7 +2,7 @@ package com.pragma.plazoleta.infrastructure.out.security.jwt;
 
 import com.pragma.plazoleta.domain.model.User;
 import com.pragma.plazoleta.domain.spi.ITokenServicePort;
-import com.pragma.plazoleta.infrastructure.configuration.security.JwtProperties;
+import com.pragma.plazoleta.infrastructure.out.security.jwt.configuration.JwtProperties;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;

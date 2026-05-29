@@ -8,7 +8,7 @@ import com.pragma.plazoleta.domain.spi.ITokenServicePort;
 import com.pragma.plazoleta.domain.spi.IUserPersistencePort;
 import com.pragma.plazoleta.domain.usecase.AuthUseCase;
 import com.pragma.plazoleta.domain.usecase.UserUseCase;
-import com.pragma.plazoleta.infrastructure.configuration.security.JwtProperties;
+import com.pragma.plazoleta.infrastructure.out.security.jwt.configuration.JwtProperties;
 import com.pragma.plazoleta.infrastructure.out.jpa.adapter.RoleJpaAdapter;
 import com.pragma.plazoleta.infrastructure.out.jpa.adapter.UserJpaAdapter;
 import com.pragma.plazoleta.infrastructure.out.jpa.mapper.IRoleEntityMapper;
