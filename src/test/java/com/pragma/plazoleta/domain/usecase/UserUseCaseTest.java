@@ -46,6 +46,9 @@ class UserUseCaseTest {
     private User validOwner;
     private Role ownerRole;
 
+    private User validEmployee;
+    private Role employeeRole;
+
     @BeforeEach
     void setUp() {
         ownerRole = Role.builder()
@@ -63,11 +66,27 @@ class UserUseCaseTest {
                 .email("jenner.durand@plazoleta.com")
                 .password("ExamplePassword123")
                 .build();
+
+        employeeRole = Role.builder()
+                .id(3L)
+                .name("EMPLOYEE")
+                .description("Restaurant employee")
+                .build();
+
+        validEmployee = User.builder()
+                .name("John")
+                .lastName("Cook")
+                .documentNumber("88888888")
+                .phone("+51988888888")
+                .birthDate(LocalDate.of(1995, 5, 10))
+                .email("john.cook@plazoleta.com")
+                .password("EmployeePass123$")
+                .build();
     }
 
     @Test
     @DisplayName("Should create an owner successfully, assigning role and encrypting password")
-    void shouldCreateOwnerSuccessfullyWhenAllDataIsValid() {
+    void shouldCreateOwnerSuccessfullyWhenAllDataIsValidInCreateOwner() {
         var rawPassword = validOwner.getPassword();
         var encodedPassword = "$2a$10$hashedPassword";
 
@@ -103,8 +122,8 @@ class UserUseCaseTest {
     }
 
     @Test
-    @DisplayName("Should throw UserNotOfLegalAgeException when user is younger than 18")
-    void shouldThrowExceptionWhenUserIsNotOfLegalAge() {
+    @DisplayName("Should throw UserNotOfLegalAgeException when user is younger than 18 in create owner")
+    void shouldThrowExceptionWhenUserIsNotOfLegalAgeInCreateOwner() {
         validOwner.setBirthDate(LocalDate.now().minusYears(17));
 
         assertThatThrownBy(() -> userUseCase.createOwner(validOwner))
@@ -114,8 +133,8 @@ class UserUseCaseTest {
     }
 
     @Test
-    @DisplayName("Should throw EmailAlreadyExistsException when email is already registered")
-    void shouldThrowExceptionWhenEmailAlreadyExists() {
+    @DisplayName("Should throw EmailAlreadyExistsException when email is already registered in create owner")
+    void shouldThrowExceptionWhenEmailAlreadyExistsInCreateOwner() {
         when(userPersistencePort
                 .existsByEmail(validOwner.getEmail()))
                 .thenReturn(true);
@@ -127,8 +146,8 @@ class UserUseCaseTest {
     }
 
     @Test
-    @DisplayName("Should throw DocumentNumberAlreadyExistsException when document is duplicated")
-    void shouldThrowExceptionWhenDocumentNumberAlreadyExists() {
+    @DisplayName("Should throw DocumentNumberAlreadyExistsException when document is duplicated in create owner")
+    void shouldThrowExceptionWhenDocumentNumberAlreadyExistsInCreateOwner() {
         when(userPersistencePort
                 .existsByEmail(validOwner.getEmail()))
                 .thenReturn(false);
@@ -143,8 +162,8 @@ class UserUseCaseTest {
     }
 
     @Test
-    @DisplayName("Should throw RoleNotFoundException when OWNER role is not configured")
-    void shouldThrowExceptionWhenOwnerRoleDoesNotExist() {
+    @DisplayName("Should throw RoleNotFoundException when OWNER role is not configured in create owner")
+    void shouldThrowExceptionWhenOwnerRoleDoesNotExistInCreateOwner() {
         when(userPersistencePort
                 .existsByEmail(validOwner.getEmail()))
                 .thenReturn(false);
@@ -162,8 +181,8 @@ class UserUseCaseTest {
     }
 
     @Test
-    @DisplayName("Should return the user when it exists")
-    void shouldReturnUserWhenExists() {
+    @DisplayName("Should return the user when it exists in get user by Id")
+    void shouldReturnUserWhenExistsInGetUserById() {
         var existing = User.builder()
                 .id(5L)
                 .email("jenner.durand@plazoleta.com")
@@ -179,11 +198,88 @@ class UserUseCaseTest {
     }
 
     @Test
-    @DisplayName("Should throw UserNotFoundException when user does not exist")
-    void shouldThrowWhenUserNotFound() {
+    @DisplayName("Should throw UserNotFoundException when user does not exist in get user by Id")
+    void shouldThrowWhenUserNotFoundInGetUserById() {
         when(userPersistencePort.findById(99L)).thenReturn(null);
 
         assertThatThrownBy(() -> userUseCase.getUserById(99L))
                 .isInstanceOf(UserNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("Should create an employee successfully, assigning role and encrypting password")
+    void shouldCreateEmployeeSuccessfullyWhenAllDataIsValidInCreateEmployee() {
+        var rawPassword = validEmployee.getPassword();
+        var encodedPassword = "$2a$10$hashedEmployeePassword";
+
+        when(userPersistencePort.existsByEmail(validEmployee.getEmail())).thenReturn(false);
+        when(userPersistencePort.existsByDocumentNumber(validEmployee.getDocumentNumber())).thenReturn(false);
+        when(rolePersistencePort.findByName(Roles.EMPLOYEE.getName())).thenReturn(employeeRole);
+        when(passwordEncoderPort.encode(rawPassword)).thenReturn(encodedPassword);
+        when(userPersistencePort.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        var result = userUseCase.createEmployee(validEmployee);
+
+        verify(passwordEncoderPort).encode(rawPassword);
+        verify(userPersistencePort).save(any(User.class));
+
+        assertThat(result).isNotNull();
+        assertThat(result.getEmail()).isEqualTo(validEmployee.getEmail());
+        assertThat(result.getPassword()).isEqualTo(encodedPassword);
+        assertThat(result.getRole()).isNotNull();
+        assertThat(result.getRole().getName()).isEqualTo(Roles.EMPLOYEE.getName());
+    }
+
+    @Test
+    @DisplayName("Should throw UserNotOfLegalAgeException when employee is under 18 in create employee")
+    void shouldThrowExceptionWhenUserIsNotOfLegalAgeInCreateEmployee() {
+        validEmployee.setBirthDate(LocalDate.now().minusYears(17));
+
+        assertThatThrownBy(() -> userUseCase.createEmployee(validEmployee))
+                .isInstanceOf(UserNotOfLegalAgeException.class);
+
+        verify(userPersistencePort, never()).save(any(User.class));
+    }
+
+    @Test
+    @DisplayName("Should throw EmailAlreadyExistsException when email is taken in create employee")
+    void shouldThrowExceptionWhenEmailAlreadyExistsInCreateEmployee() {
+        when(userPersistencePort.existsByEmail(validEmployee.getEmail()))
+                .thenReturn(true);
+
+        assertThatThrownBy(() -> userUseCase.createEmployee(validEmployee))
+                .isInstanceOf(EmailAlreadyExistsException.class);
+
+        verify(userPersistencePort, never()).save(any(User.class));
+    }
+
+    @Test
+    @DisplayName("Should throw DocumentNumberAlreadyExistsException when document is taken in create employee")
+    void shouldThrowExceptionWhenDocumentNumberAlreadyExistsInCreateEmployee() {
+        when(userPersistencePort.existsByEmail(validEmployee.getEmail()))
+                .thenReturn(false);
+        when(userPersistencePort.existsByDocumentNumber(validEmployee.getDocumentNumber()))
+                .thenReturn(true);
+
+        assertThatThrownBy(() -> userUseCase.createEmployee(validEmployee))
+                .isInstanceOf(DocumentNumberAlreadyExistsException.class);
+
+        verify(userPersistencePort, never()).save(any(User.class));
+    }
+
+    @Test
+    @DisplayName("Should throw RoleNotFoundException when EMPLOYEE role is not configured in create employee")
+    void shouldThrowExceptionWhenEmployeeRoleDoesNotExistInCreateEmployee() {
+        when(userPersistencePort.existsByEmail(validEmployee.getEmail()))
+                .thenReturn(false);
+        when(userPersistencePort.existsByDocumentNumber(validEmployee.getDocumentNumber()))
+                .thenReturn(false);
+        when(rolePersistencePort.findByName(Roles.EMPLOYEE.getName()))
+                .thenReturn(null);
+
+        assertThatThrownBy(() -> userUseCase.createEmployee(validEmployee))
+                .isInstanceOf(RoleNotFoundException.class);
+
+        verify(userPersistencePort, never()).save(any(User.class));
     }
 }

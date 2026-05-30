@@ -22,15 +22,12 @@ public class UserUseCase implements IUserServicePort {
 
     @Override
     public User createOwner(User user) {
-        user.validateLegalAge();
-        validateEmailUniqueness(user.getEmail());
-        validateDocumentNumberUniqueness(user.getDocumentNumber());
+        return createUserWithRole(user, Roles.OWNER.getName());
+    }
 
-        var ownerRole = resolveOwnerRole();
-        user.setRole(ownerRole);
-        user.setPassword(passwordEncoderPort.encode(user.getPassword()));
-
-        return userPersistencePort.save(user);
+    @Override
+    public User createEmployee(User user) {
+        return createUserWithRole(user, Roles.EMPLOYEE.getName());
     }
 
     @Override
@@ -41,6 +38,20 @@ public class UserUseCase implements IUserServicePort {
         }
 
         return user;
+    }
+
+    private User createUserWithRole(User user, String roleName) {
+        user.validateLegalAge();
+
+        validateEmailUniqueness(user.getEmail());
+        validateDocumentNumberUniqueness(user.getDocumentNumber());
+
+        var role = resolveRoleByName(roleName);
+        user.setRole(role);
+
+        user.setPassword(passwordEncoderPort.encode(user.getPassword()));
+
+        return userPersistencePort.save(user);
     }
 
     private void validateEmailUniqueness(String email) {
@@ -59,8 +70,8 @@ public class UserUseCase implements IUserServicePort {
         }
     }
 
-    private Role resolveOwnerRole() {
-        var role = rolePersistencePort.findByName(Roles.OWNER.getName());
+    private Role resolveRoleByName(String roleName) {
+        var role = rolePersistencePort.findByName(roleName);
 
         if (role == null) {
             throw new RoleNotFoundException(Roles.OWNER.getId());
