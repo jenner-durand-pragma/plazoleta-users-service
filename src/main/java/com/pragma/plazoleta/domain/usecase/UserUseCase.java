@@ -32,7 +32,7 @@ public class UserUseCase implements IUserServicePort {
 
     @Override
     public User createClient(User user) {
-        return null;
+        return createUserWithRole(user, Roles.CLIENT.getName());
     }
 
     @Override
