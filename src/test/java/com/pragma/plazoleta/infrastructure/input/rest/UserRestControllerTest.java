@@ -2,6 +2,7 @@ package com.pragma.plazoleta.infrastructure.input.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.pragma.plazoleta.application.dto.request.user.CreateEmployeeRequestDto;
 import com.pragma.plazoleta.application.dto.request.user.CreateOwnerRequestDto;
 import com.pragma.plazoleta.application.dto.response.user.UserInformationResponseDto;
 import com.pragma.plazoleta.application.dto.response.user.UserResponseDto;
@@ -62,15 +63,18 @@ class UserRestControllerTest {
     private IUserHandler userHandler;
 
     private ObjectMapper objectMapper;
-    private CreateOwnerRequestDto validRequest;
-    private UsernamePasswordAuthenticationToken userAuthentication;
+    private CreateOwnerRequestDto ownerValidRequest;
+    private CreateEmployeeRequestDto employeeValidRequest;
+
+    private UsernamePasswordAuthenticationToken adminUserAuthentication;
+    private UsernamePasswordAuthenticationToken ownerUserAuthentication;
 
     @BeforeEach
     void setUp() {
         objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
 
-        validRequest = CreateOwnerRequestDto.builder()
+        ownerValidRequest = CreateOwnerRequestDto.builder()
                 .name("Jenner")
                 .lastName("Durand")
                 .documentNumber("76859685")
@@ -79,12 +83,27 @@ class UserRestControllerTest {
                 .email("jenner.durand@plazoleta.com")
                 .password("PlainPassword123$")
                 .build();
+        employeeValidRequest = CreateEmployeeRequestDto.builder()
+                .name("Jenner")
+                .lastName("Durand")
+                .documentNumber("76859685")
+                .phone("+51985768594")
+                .email("jenner.durand@plazoleta.com")
+                .password("PlainPassword123$")
+                .build();
 
-        var principal = new AuthenticatedUser(2L, "jenner.durand@plazoleta.com", "ADMIN");
-        userAuthentication = new UsernamePasswordAuthenticationToken(
-                principal,
+        var adminPrincipal = new AuthenticatedUser(2L, "jenner.durand@plazoleta.com", "ADMIN");
+        adminUserAuthentication = new UsernamePasswordAuthenticationToken(
+                adminPrincipal,
                 null,
                 List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
+        );
+
+        var ownerPrincipal = new AuthenticatedUser(2L, "jenner.durand@plazoleta.com", "OWNER");
+        ownerUserAuthentication = new UsernamePasswordAuthenticationToken(
+                ownerPrincipal,
+                null,
+                List.of(new SimpleGrantedAuthority("ROLE_OWNER"))
         );
     }
 
@@ -104,9 +123,9 @@ class UserRestControllerTest {
         when(userHandler.createOwner(any(CreateOwnerRequestDto.class))).thenReturn(response);
 
         mockMvc.perform(post("/api/v1/users/owner")
-                        .with(authentication(userAuthentication))
+                        .with(authentication(adminUserAuthentication))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(validRequest)))
+                        .content(objectMapper.writeValueAsString(ownerValidRequest)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(10))
                 .andExpect(jsonPath("$.roleName").value("OWNER"))
@@ -122,9 +141,9 @@ class UserRestControllerTest {
                 .thenThrow(new EmailAlreadyExistsException());
 
         mockMvc.perform(post("/api/v1/users/owner")
-                        .with(authentication(userAuthentication))
+                        .with(authentication(adminUserAuthentication))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(validRequest)))
+                        .content(objectMapper.writeValueAsString(ownerValidRequest)))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.status").value(409))
                 .andExpect(jsonPath("$.fieldErrors[0].field").value("email"));
@@ -137,9 +156,9 @@ class UserRestControllerTest {
                 .thenThrow(new RoleNotFoundException(Roles.OWNER.getId()));
 
         mockMvc.perform(post("/api/v1/users/owner")
-                        .with(authentication(userAuthentication))
+                        .with(authentication(adminUserAuthentication))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(validRequest)))
+                        .content(objectMapper.writeValueAsString(ownerValidRequest)))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404));
     }
@@ -151,9 +170,9 @@ class UserRestControllerTest {
                 .thenThrow(new UserNotOfLegalAgeException());
 
         mockMvc.perform(post("/api/v1/users/owner")
-                        .with(authentication(userAuthentication))
+                        .with(authentication(adminUserAuthentication))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(validRequest)))
+                        .content(objectMapper.writeValueAsString(ownerValidRequest)))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.status").value(422));
     }
@@ -161,12 +180,12 @@ class UserRestControllerTest {
     @Test
     @DisplayName("Should return 400 with field errors on invalid input")
     void shouldReturn400OnValidationError() throws Exception {
-        validRequest.setEmail("not-an-email");
+        ownerValidRequest.setEmail("not-an-email");
 
         mockMvc.perform(post("/api/v1/users/owner")
-                        .with(authentication(userAuthentication))
+                        .with(authentication(adminUserAuthentication))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(validRequest)))
+                        .content(objectMapper.writeValueAsString(ownerValidRequest)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.fieldErrors").isArray());
@@ -176,7 +195,7 @@ class UserRestControllerTest {
     @DisplayName("Should return 400 when request body is malformed JSON")
     void shouldReturn400OnMalformedJson() throws Exception {
         mockMvc.perform(post("/api/v1/users/owner")
-                        .with(authentication(userAuthentication))
+                        .with(authentication(adminUserAuthentication))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{ this is not valid json "))
                 .andExpect(status().isBadRequest())
@@ -186,9 +205,44 @@ class UserRestControllerTest {
     @Test
     @DisplayName("Should return 405 when HTTP method is not supported")
     void shouldReturn405OnUnsupportedMethod() throws Exception {
-        mockMvc.perform(delete("/api/v1/users/owner").with(authentication(userAuthentication)))
+        mockMvc.perform(delete("/api/v1/users/owner").with(authentication(adminUserAuthentication)))
                 .andExpect(status().isMethodNotAllowed())
                 .andExpect(jsonPath("$.status").value(405));
+    }
+
+    @Test
+    @DisplayName("Should return 201 when employee data is valid (caller is OWNER)")
+    void shouldReturn201OnCreateEmployee() throws Exception {
+        var response = UserResponseDto.builder()
+                .id(10L)
+                .name("Jenner")
+                .lastName("Durand")
+                .documentNumber("76859685")
+                .phone("+51985768594")
+                .email("jenner.durand@plazoleta.com")
+                .roleName("EMPLOYEE")
+                .build();
+        when(userHandler.createEmployee(any())).thenReturn(response);
+
+        mockMvc.perform(post("/api/v1/users/employee")
+                        .with(authentication(ownerUserAuthentication))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(employeeValidRequest)))
+                .andExpect(jsonPath("$.id").value(10))
+                .andExpect(jsonPath("$.roleName").value("EMPLOYEE"))
+                .andExpect(jsonPath("$.email").value("jenner.durand@plazoleta.com"));
+    }
+
+    @Test
+    @DisplayName("Should return 400 when document number is not numeric")
+    void shouldReturn400OnInvalidDocumentEmployee() throws Exception {
+        employeeValidRequest.setDocumentNumber("invalid.document");
+
+        mockMvc.perform(post("/api/v1/users/employee")
+                        .with(authentication(ownerUserAuthentication))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(employeeValidRequest)))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -206,7 +260,7 @@ class UserRestControllerTest {
 
         when(userHandler.getUserById(10L)).thenReturn(userInformation);
 
-        mockMvc.perform(get("/api/v1/users/10").with(authentication(userAuthentication)))
+        mockMvc.perform(get("/api/v1/users/10").with(authentication(adminUserAuthentication)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(10))
                 .andExpect(jsonPath("$.roleName").value("OWNER"))
