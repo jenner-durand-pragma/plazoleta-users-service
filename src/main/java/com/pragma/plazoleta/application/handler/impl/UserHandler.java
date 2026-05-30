@@ -1,5 +1,6 @@
 package com.pragma.plazoleta.application.handler.impl;
 
+import com.pragma.plazoleta.application.dto.request.user.CreateClientRequestDto;
 import com.pragma.plazoleta.application.dto.request.user.CreateEmployeeRequestDto;
 import com.pragma.plazoleta.application.dto.request.user.CreateOwnerRequestDto;
 import com.pragma.plazoleta.application.dto.response.user.UserInformationResponseDto;
@@ -37,6 +38,11 @@ public class UserHandler implements IUserHandler {
         var userCreated = userServicePort.createEmployee(userToCreate);
 
         return userResponseMapper.toResponse(userCreated);
+    }
+
+    @Override
+    public UserResponseDto createClient(CreateClientRequestDto request) {
+        return null;
     }
 
     @Override

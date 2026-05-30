@@ -1,5 +1,6 @@
 package com.pragma.plazoleta.application.mapper;
 
+import com.pragma.plazoleta.application.dto.request.user.CreateClientRequestDto;
 import com.pragma.plazoleta.application.dto.request.user.CreateEmployeeRequestDto;
 import com.pragma.plazoleta.application.dto.request.user.CreateOwnerRequestDto;
 import com.pragma.plazoleta.domain.model.User;
@@ -20,4 +21,8 @@ public interface IUserRequestMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "role", ignore = true)
     User toUser(CreateEmployeeRequestDto dto);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "role", ignore = true)
+    User toUser(CreateClientRequestDto dto);
 }

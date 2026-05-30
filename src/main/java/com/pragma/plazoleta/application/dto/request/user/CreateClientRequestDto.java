@@ -9,17 +9,14 @@ import lombok.Setter;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Past;
 import javax.validation.constraints.Pattern;
-import java.time.LocalDate;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CreateOwnerRequestDto {
+public class CreateClientRequestDto {
 
     @NotBlank(message = "Name is required")
     @Schema(description = "Owner's first name", example = "Jenner")
@@ -41,11 +38,6 @@ public class CreateOwnerRequestDto {
     )
     @Schema(description = "Contact phone number. Can include '+' symbol.", example = "+51985768594", maxLength = 13)
     private String phone;
-
-    @NotNull(message = "Birth date is required")
-    @Past(message = "Birth date must be in the past")
-    @Schema(description = "Owner's date of birth. Must be of legal age (18+).", example = "2002-09-21")
-    private LocalDate birthDate;
 
     @NotBlank(message = "Email is required")
     @Email(message = "Email format is invalid")
