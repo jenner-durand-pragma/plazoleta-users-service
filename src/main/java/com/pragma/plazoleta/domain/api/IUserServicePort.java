@@ -6,6 +6,7 @@ public interface IUserServicePort {
 
     User createOwner(User user);
     User createEmployee(User user);
+    User createClient(User user);
     User getUserById(Long id);
 
 }

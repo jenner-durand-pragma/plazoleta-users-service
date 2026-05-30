@@ -49,6 +49,9 @@ class UserUseCaseTest {
     private User validEmployee;
     private Role employeeRole;
 
+    private User validClient;
+    private Role clientRole;
+
     @BeforeEach
     void setUp() {
         ownerRole = Role.builder()
@@ -81,6 +84,22 @@ class UserUseCaseTest {
                 .birthDate(LocalDate.of(1995, 5, 10))
                 .email("john.cook@plazoleta.com")
                 .password("EmployeePass123$")
+                .build();
+
+        clientRole = Role.builder()
+                .id(4L)
+                .name("CLIENT")
+                .description("Restaurant client")
+                .build();
+
+        validClient = User.builder()
+                .name("Jane")
+                .lastName("Doe")
+                .documentNumber("12345678")
+                .phone("+51911111111")
+                .birthDate(LocalDate.of(2000, 1, 1))
+                .email("jane.doe@plazoleta.com")
+                .password("ClientPass123$")
                 .build();
     }
 
@@ -278,6 +297,89 @@ class UserUseCaseTest {
                 .thenReturn(null);
 
         assertThatThrownBy(() -> userUseCase.createEmployee(validEmployee))
+                .isInstanceOf(RoleNotFoundException.class);
+
+        verify(userPersistencePort, never()).save(any(User.class));
+    }
+
+    @Test
+    @DisplayName("Should create a client successfully, assigning role and encrypting password")
+    void shouldCreateClientSuccessfullyWhenAllDataIsValidInCreateClient() {
+        var rawPassword = validClient.getPassword();
+        var encodedPassword = "$2a$10$hashedClientPassword";
+
+        when(userPersistencePort.existsByEmail(validClient.getEmail()))
+                .thenReturn(false);
+        when(userPersistencePort.existsByDocumentNumber(validClient.getDocumentNumber()))
+                .thenReturn(false);
+        when(rolePersistencePort.findByName(Roles.CLIENT.getName()))
+                .thenReturn(clientRole);
+        when(passwordEncoderPort.encode(rawPassword))
+                .thenReturn(encodedPassword);
+        when(userPersistencePort.save(any(User.class)))
+                .thenAnswer(inv -> inv.getArgument(0));
+
+        var result = userUseCase.createClient(validClient);
+
+        verify(passwordEncoderPort).encode(rawPassword);
+        verify(userPersistencePort).save(any(User.class));
+
+        assertThat(result).isNotNull();
+        assertThat(result.getEmail()).isEqualTo(validClient.getEmail());
+        assertThat(result.getPassword()).isEqualTo(encodedPassword);
+        assertThat(result.getRole()).isNotNull();
+        assertThat(result.getRole().getName()).isEqualTo(Roles.CLIENT.getName());
+        assertThat(result.getRole()).isEqualTo(clientRole);
+    }
+
+    @Test
+    @DisplayName("Should throw UserNotOfLegalAgeException when client is under 18 in create client")
+    void shouldThrowExceptionWhenUserIsNotOfLegalAgeInCreateClient() {
+        validClient.setBirthDate(LocalDate.now().minusYears(17));
+
+        assertThatThrownBy(() -> userUseCase.createClient(validClient))
+                .isInstanceOf(UserNotOfLegalAgeException.class);
+
+        verify(userPersistencePort, never()).save(any(User.class));
+    }
+
+    @Test
+    @DisplayName("Should throw EmailAlreadyExistsException when email is taken in create client")
+    void shouldThrowExceptionWhenEmailAlreadyExistsInCreateClient() {
+        when(userPersistencePort.existsByEmail(validClient.getEmail()))
+                .thenReturn(true);
+
+        assertThatThrownBy(() -> userUseCase.createClient(validClient))
+                .isInstanceOf(EmailAlreadyExistsException.class);
+
+        verify(userPersistencePort, never()).save(any(User.class));
+    }
+
+    @Test
+    @DisplayName("Should throw DocumentNumberAlreadyExistsException when document is taken in create client")
+    void shouldThrowExceptionWhenDocumentNumberAlreadyExistsInCreateClient() {
+        when(userPersistencePort.existsByEmail(validClient.getEmail()))
+                .thenReturn(false);
+        when(userPersistencePort.existsByDocumentNumber(validClient.getDocumentNumber()))
+                .thenReturn(true);
+
+        assertThatThrownBy(() -> userUseCase.createClient(validClient))
+                .isInstanceOf(DocumentNumberAlreadyExistsException.class);
+
+        verify(userPersistencePort, never()).save(any(User.class));
+    }
+
+    @Test
+    @DisplayName("Should throw RoleNotFoundException when CLIENT role is not configured in create client")
+    void shouldThrowExceptionWhenClientRoleDoesNotExistInCreateClient() {
+        when(userPersistencePort.existsByEmail(validClient.getEmail()))
+                .thenReturn(false);
+        when(userPersistencePort.existsByDocumentNumber(validClient.getDocumentNumber()))
+                .thenReturn(false);
+        when(rolePersistencePort.findByName(Roles.CLIENT.getName()))
+                .thenReturn(null);
+
+        assertThatThrownBy(() -> userUseCase.createClient(validClient))
                 .isInstanceOf(RoleNotFoundException.class);
 
         verify(userPersistencePort, never()).save(any(User.class));
