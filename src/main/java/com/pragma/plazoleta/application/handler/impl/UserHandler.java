@@ -42,7 +42,10 @@ public class UserHandler implements IUserHandler {
 
     @Override
     public UserResponseDto createClient(CreateClientRequestDto request) {
-        return null;
+        var userToCreate = userRequestMapper.toUser(request);
+        var userCreated = userServicePort.createClient(userToCreate);
+
+        return userResponseMapper.toResponse(userCreated);
     }
 
     @Override
