@@ -27,7 +27,7 @@ public class UserUseCase implements IUserServicePort {
 
     @Override
     public User createEmployee(User user) {
-        return null;
+        return createUserWithRole(user, Roles.EMPLOYEE.getName());
     }
 
     @Override
