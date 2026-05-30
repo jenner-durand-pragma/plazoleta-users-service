@@ -31,6 +31,7 @@ public class UserHandler implements IUserHandler {
     }
 
     @Override
+    @Transactional
     public UserResponseDto createEmployee(CreateEmployeeRequestDto request) {
         var userToCreate = userRequestMapper.toUser(request);
         var userCreated = userServicePort.createEmployee(userToCreate);
