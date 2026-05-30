@@ -32,7 +32,10 @@ public class UserHandler implements IUserHandler {
 
     @Override
     public UserResponseDto createEmployee(CreateEmployeeRequestDto request) {
-        return null;
+        var userToCreate = userRequestMapper.toUser(request);
+        var userCreated = userServicePort.createEmployee(userToCreate);
+
+        return userResponseMapper.toResponse(userCreated);
     }
 
     @Override
