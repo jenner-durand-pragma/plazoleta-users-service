@@ -67,7 +67,7 @@ class UserUseCaseTest {
 
     @Test
     @DisplayName("Should create an owner successfully, assigning role and encrypting password")
-    void shouldCreateOwnerSuccessfullyWhenAllDataIsValid() {
+    void shouldCreateOwnerSuccessfullyWhenAllDataIsValidInCreateOwner() {
         var rawPassword = validOwner.getPassword();
         var encodedPassword = "$2a$10$hashedPassword";
 
@@ -103,8 +103,8 @@ class UserUseCaseTest {
     }
 
     @Test
-    @DisplayName("Should throw UserNotOfLegalAgeException when user is younger than 18")
-    void shouldThrowExceptionWhenUserIsNotOfLegalAge() {
+    @DisplayName("Should throw UserNotOfLegalAgeException when user is younger than 18 in create owner")
+    void shouldThrowExceptionWhenUserIsNotOfLegalAgeInCreateOwner() {
         validOwner.setBirthDate(LocalDate.now().minusYears(17));
 
         assertThatThrownBy(() -> userUseCase.createOwner(validOwner))
@@ -114,8 +114,8 @@ class UserUseCaseTest {
     }
 
     @Test
-    @DisplayName("Should throw EmailAlreadyExistsException when email is already registered")
-    void shouldThrowExceptionWhenEmailAlreadyExists() {
+    @DisplayName("Should throw EmailAlreadyExistsException when email is already registered in create owner")
+    void shouldThrowExceptionWhenEmailAlreadyExistsInCreateOwner() {
         when(userPersistencePort
                 .existsByEmail(validOwner.getEmail()))
                 .thenReturn(true);
@@ -127,8 +127,8 @@ class UserUseCaseTest {
     }
 
     @Test
-    @DisplayName("Should throw DocumentNumberAlreadyExistsException when document is duplicated")
-    void shouldThrowExceptionWhenDocumentNumberAlreadyExists() {
+    @DisplayName("Should throw DocumentNumberAlreadyExistsException when document is duplicated in create owner")
+    void shouldThrowExceptionWhenDocumentNumberAlreadyExistsInCreateOwner() {
         when(userPersistencePort
                 .existsByEmail(validOwner.getEmail()))
                 .thenReturn(false);
@@ -143,8 +143,8 @@ class UserUseCaseTest {
     }
 
     @Test
-    @DisplayName("Should throw RoleNotFoundException when OWNER role is not configured")
-    void shouldThrowExceptionWhenOwnerRoleDoesNotExist() {
+    @DisplayName("Should throw RoleNotFoundException when OWNER role is not configured in create owner")
+    void shouldThrowExceptionWhenOwnerRoleDoesNotExistInCreateOwner() {
         when(userPersistencePort
                 .existsByEmail(validOwner.getEmail()))
                 .thenReturn(false);
@@ -162,8 +162,8 @@ class UserUseCaseTest {
     }
 
     @Test
-    @DisplayName("Should return the user when it exists")
-    void shouldReturnUserWhenExists() {
+    @DisplayName("Should return the user when it exists in get user by Id")
+    void shouldReturnUserWhenExistsInGetUserById() {
         var existing = User.builder()
                 .id(5L)
                 .email("jenner.durand@plazoleta.com")
@@ -179,8 +179,8 @@ class UserUseCaseTest {
     }
 
     @Test
-    @DisplayName("Should throw UserNotFoundException when user does not exist")
-    void shouldThrowWhenUserNotFound() {
+    @DisplayName("Should throw UserNotFoundException when user does not exist in get user by Id")
+    void shouldThrowWhenUserNotFoundInGetUserById() {
         when(userPersistencePort.findById(99L)).thenReturn(null);
 
         assertThatThrownBy(() -> userUseCase.getUserById(99L))
