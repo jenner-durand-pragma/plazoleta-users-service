@@ -6,6 +6,7 @@ import com.pragma.plazoleta.application.dto.response.user.UserInformationRespons
 import com.pragma.plazoleta.application.dto.response.user.UserResponseDto;
 import com.pragma.plazoleta.application.handler.IUserHandler;
 import com.pragma.plazoleta.infrastructure.configuration.security.annotation.IsAdmin;
+import com.pragma.plazoleta.infrastructure.configuration.security.annotation.IsOwner;
 import com.pragma.plazoleta.infrastructure.exceptionhandler.common.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -66,11 +67,37 @@ public class UserRestController {
         return new ResponseEntity<>(createdOwner, HttpStatus.CREATED);
     }
 
+    @IsOwner
+    @Operation(summary = "Create an employee account",
+            description = "Creates a new employee user.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Employee created successfully",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = UserResponseDto.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid input data",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Authentication required",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Caller is not an OWNER",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "EMPLOYEE role not configured",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "409", description = "Email or document number already exists",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "422", description = "User is not of legal age",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ErrorResponse.class)))
+    })
     @PostMapping("/employee")
     public ResponseEntity<UserResponseDto> createEmployee(
             @Valid @RequestBody CreateEmployeeRequestDto request
     ) {
-        return null;
+        return new ResponseEntity<>(userHandler.createEmployee(request), HttpStatus.CREATED);
     }
 
     @Operation(summary = "Get user by id",
