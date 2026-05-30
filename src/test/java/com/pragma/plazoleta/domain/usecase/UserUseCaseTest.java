@@ -46,6 +46,9 @@ class UserUseCaseTest {
     private User validOwner;
     private Role ownerRole;
 
+    private User validEmployee;
+    private Role employeeRole;
+
     @BeforeEach
     void setUp() {
         ownerRole = Role.builder()
@@ -62,6 +65,22 @@ class UserUseCaseTest {
                 .birthDate(LocalDate.now().minusYears(30))
                 .email("jenner.durand@plazoleta.com")
                 .password("ExamplePassword123")
+                .build();
+
+        employeeRole = Role.builder()
+                .id(3L)
+                .name("EMPLOYEE")
+                .description("Restaurant employee")
+                .build();
+
+        validEmployee = User.builder()
+                .name("John")
+                .lastName("Cook")
+                .documentNumber("88888888")
+                .phone("+51988888888")
+                .birthDate(LocalDate.of(1995, 5, 10))
+                .email("john.cook@plazoleta.com")
+                .password("EmployeePass123$")
                 .build();
     }
 
@@ -185,5 +204,82 @@ class UserUseCaseTest {
 
         assertThatThrownBy(() -> userUseCase.getUserById(99L))
                 .isInstanceOf(UserNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("Should create an employee successfully, assigning role and encrypting password")
+    void shouldCreateEmployeeSuccessfullyWhenAllDataIsValidInCreateEmployee() {
+        var rawPassword = validEmployee.getPassword();
+        var encodedPassword = "$2a$10$hashedEmployeePassword";
+
+        when(userPersistencePort.existsByEmail(validEmployee.getEmail())).thenReturn(false);
+        when(userPersistencePort.existsByDocumentNumber(validEmployee.getDocumentNumber())).thenReturn(false);
+        when(rolePersistencePort.findByName(Roles.EMPLOYEE.getName())).thenReturn(employeeRole);
+        when(passwordEncoderPort.encode(rawPassword)).thenReturn(encodedPassword);
+        when(userPersistencePort.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        var result = userUseCase.createEmployee(validEmployee);
+
+        verify(passwordEncoderPort).encode(rawPassword);
+        verify(userPersistencePort).save(any(User.class));
+
+        assertThat(result).isNotNull();
+        assertThat(result.getEmail()).isEqualTo(validEmployee.getEmail());
+        assertThat(result.getPassword()).isEqualTo(encodedPassword);
+        assertThat(result.getRole()).isNotNull();
+        assertThat(result.getRole().getName()).isEqualTo(Roles.EMPLOYEE.getName());
+    }
+
+    @Test
+    @DisplayName("Should throw UserNotOfLegalAgeException when employee is under 18 in create employee")
+    void shouldThrowExceptionWhenUserIsNotOfLegalAgeInCreateEmployee() {
+        validEmployee.setBirthDate(LocalDate.now().minusYears(17));
+
+        assertThatThrownBy(() -> userUseCase.createEmployee(validEmployee))
+                .isInstanceOf(UserNotOfLegalAgeException.class);
+
+        verify(userPersistencePort, never()).save(any(User.class));
+    }
+
+    @Test
+    @DisplayName("Should throw EmailAlreadyExistsException when email is taken in create employee")
+    void shouldThrowExceptionWhenEmailAlreadyExistsInCreateEmployee() {
+        when(userPersistencePort.existsByEmail(validEmployee.getEmail()))
+                .thenReturn(true);
+
+        assertThatThrownBy(() -> userUseCase.createEmployee(validEmployee))
+                .isInstanceOf(EmailAlreadyExistsException.class);
+
+        verify(userPersistencePort, never()).save(any(User.class));
+    }
+
+    @Test
+    @DisplayName("Should throw DocumentNumberAlreadyExistsException when document is taken in create employee")
+    void shouldThrowExceptionWhenDocumentNumberAlreadyExistsInCreateEmployee() {
+        when(userPersistencePort.existsByEmail(validEmployee.getEmail()))
+                .thenReturn(false);
+        when(userPersistencePort.existsByDocumentNumber(validEmployee.getDocumentNumber()))
+                .thenReturn(true);
+
+        assertThatThrownBy(() -> userUseCase.createEmployee(validEmployee))
+                .isInstanceOf(DocumentNumberAlreadyExistsException.class);
+
+        verify(userPersistencePort, never()).save(any(User.class));
+    }
+
+    @Test
+    @DisplayName("Should throw RoleNotFoundException when EMPLOYEE role is not configured in create employee")
+    void shouldThrowExceptionWhenEmployeeRoleDoesNotExistInCreateEmployee() {
+        when(userPersistencePort.existsByEmail(validEmployee.getEmail()))
+                .thenReturn(false);
+        when(userPersistencePort.existsByDocumentNumber(validEmployee.getDocumentNumber()))
+                .thenReturn(false);
+        when(rolePersistencePort.findByName(Roles.EMPLOYEE.getName()))
+                .thenReturn(null);
+
+        assertThatThrownBy(() -> userUseCase.createEmployee(validEmployee))
+                .isInstanceOf(RoleNotFoundException.class);
+
+        verify(userPersistencePort, never()).save(any(User.class));
     }
 }
