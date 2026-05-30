@@ -4,6 +4,7 @@ import com.pragma.plazoleta.application.dto.request.user.CreateOwnerRequestDto;
 import com.pragma.plazoleta.application.dto.response.user.UserInformationResponseDto;
 import com.pragma.plazoleta.application.dto.response.user.UserResponseDto;
 import com.pragma.plazoleta.application.handler.IUserHandler;
+import com.pragma.plazoleta.infrastructure.configuration.security.annotation.IsAdmin;
 import com.pragma.plazoleta.infrastructure.exceptionhandler.common.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -13,6 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,6 +33,7 @@ public class UserRestController {
 
     private final IUserHandler userHandler;
 
+    @IsAdmin
     @Operation(summary = "Create a owner account",
             description = "Allows to register a new owner.")
     @ApiResponses(value = {
@@ -38,7 +41,12 @@ public class UserRestController {
 
             @ApiResponse(responseCode = "400", description = "Invalid input data (validation failed)",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-
+            @ApiResponse(responseCode = "401", description = "Authentication required",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Caller is not an ADMIN",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "404", description = "OWNER role is not configured",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
 
@@ -61,6 +69,9 @@ public class UserRestController {
             description = "Returns non-sensitive user information. Used for inter-service validation.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User found"),
+            @ApiResponse(responseCode = "401", description = "Authentication required",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "404", description = "User not found",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
     })

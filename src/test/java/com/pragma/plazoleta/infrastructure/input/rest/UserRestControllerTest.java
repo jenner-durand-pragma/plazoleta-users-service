@@ -10,43 +10,60 @@ import com.pragma.plazoleta.domain.enums.Roles;
 import com.pragma.plazoleta.domain.exception.user.EmailAlreadyExistsException;
 import com.pragma.plazoleta.domain.exception.user.RoleNotFoundException;
 import com.pragma.plazoleta.domain.exception.user.UserNotOfLegalAgeException;
+import com.pragma.plazoleta.infrastructure.configuration.SecurityConfiguration;
+import com.pragma.plazoleta.infrastructure.configuration.security.CustomAccessDeniedHandler;
+import com.pragma.plazoleta.infrastructure.configuration.security.CustomAuthenticationEntryPoint;
+import com.pragma.plazoleta.infrastructure.configuration.security.CustomAuthenticationFilter;
+import com.pragma.plazoleta.infrastructure.configuration.security.token.ITokenValidationPort;
+import com.pragma.plazoleta.infrastructure.configuration.security.token.dto.AuthenticatedUser;
+import com.pragma.plazoleta.infrastructure.exceptionhandler.GlobalExceptionHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(
-        controllers = UserRestController.class,
-        excludeAutoConfiguration = {
-                org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class
-        }
-)
+@WebMvcTest(controllers = UserRestController.class)
+@Import({
+        GlobalExceptionHandler.class,
+        SecurityConfiguration.class,
+        CustomAuthenticationFilter.class,
+        CustomAuthenticationEntryPoint.class,
+        CustomAccessDeniedHandler.class
+})
 class UserRestControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockBean
+    private ITokenValidationPort tokenValidationPort;
+
+    @MockBean
     private IUserHandler userHandler;
 
     private ObjectMapper objectMapper;
-
     private CreateOwnerRequestDto validRequest;
+    private UsernamePasswordAuthenticationToken userAuthentication;
 
     @BeforeEach
     void setUp() {
@@ -62,6 +79,13 @@ class UserRestControllerTest {
                 .email("jenner.durand@plazoleta.com")
                 .password("PlainPassword123$")
                 .build();
+
+        var principal = new AuthenticatedUser(2L, "jenner.durand@plazoleta.com", "ADMIN");
+        userAuthentication = new UsernamePasswordAuthenticationToken(
+                principal,
+                null,
+                List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
+        );
     }
 
     @Test
@@ -80,6 +104,7 @@ class UserRestControllerTest {
         when(userHandler.createOwner(any(CreateOwnerRequestDto.class))).thenReturn(response);
 
         mockMvc.perform(post("/api/v1/users/owner")
+                        .with(authentication(userAuthentication))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validRequest)))
                 .andExpect(status().isCreated())
@@ -97,6 +122,7 @@ class UserRestControllerTest {
                 .thenThrow(new EmailAlreadyExistsException());
 
         mockMvc.perform(post("/api/v1/users/owner")
+                        .with(authentication(userAuthentication))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validRequest)))
                 .andExpect(status().isConflict())
@@ -111,6 +137,7 @@ class UserRestControllerTest {
                 .thenThrow(new RoleNotFoundException(Roles.OWNER.getId()));
 
         mockMvc.perform(post("/api/v1/users/owner")
+                        .with(authentication(userAuthentication))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validRequest)))
                 .andExpect(status().isNotFound())
@@ -124,6 +151,7 @@ class UserRestControllerTest {
                 .thenThrow(new UserNotOfLegalAgeException());
 
         mockMvc.perform(post("/api/v1/users/owner")
+                        .with(authentication(userAuthentication))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validRequest)))
                 .andExpect(status().isUnprocessableEntity())
@@ -136,6 +164,7 @@ class UserRestControllerTest {
         validRequest.setEmail("not-an-email");
 
         mockMvc.perform(post("/api/v1/users/owner")
+                        .with(authentication(userAuthentication))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validRequest)))
                 .andExpect(status().isBadRequest())
@@ -147,6 +176,7 @@ class UserRestControllerTest {
     @DisplayName("Should return 400 when request body is malformed JSON")
     void shouldReturn400OnMalformedJson() throws Exception {
         mockMvc.perform(post("/api/v1/users/owner")
+                        .with(authentication(userAuthentication))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{ this is not valid json "))
                 .andExpect(status().isBadRequest())
@@ -156,7 +186,7 @@ class UserRestControllerTest {
     @Test
     @DisplayName("Should return 405 when HTTP method is not supported")
     void shouldReturn405OnUnsupportedMethod() throws Exception {
-        mockMvc.perform(delete("/api/v1/users/owner"))
+        mockMvc.perform(delete("/api/v1/users/owner").with(authentication(userAuthentication)))
                 .andExpect(status().isMethodNotAllowed())
                 .andExpect(jsonPath("$.status").value(405));
     }
@@ -176,7 +206,7 @@ class UserRestControllerTest {
 
         when(userHandler.getUserById(10L)).thenReturn(userInformation);
 
-        mockMvc.perform(get("/api/v1/users/10"))
+        mockMvc.perform(get("/api/v1/users/10").with(authentication(userAuthentication)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(10))
                 .andExpect(jsonPath("$.roleName").value("OWNER"))
