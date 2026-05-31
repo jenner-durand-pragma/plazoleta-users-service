@@ -101,11 +101,29 @@ public class UserRestController {
         return new ResponseEntity<>(userHandler.createEmployee(request), HttpStatus.CREATED);
     }
 
+    @Operation(summary = "Create a client account.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Client created successfully",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = UserResponseDto.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid input data",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "CLIENT role not configured",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "409", description = "Email or document number already exists",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "422", description = "User is not of legal age",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ErrorResponse.class)))
+    })
     @PostMapping("/client")
     public ResponseEntity<UserResponseDto> createClient(
             @Valid @RequestBody CreateClientRequestDto request
     ) {
-        return null;
+        return new ResponseEntity<>(userHandler.createClient(request), HttpStatus.CREATED);
     }
 
     @Operation(summary = "Get user by id",
