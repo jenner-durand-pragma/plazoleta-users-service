@@ -41,6 +41,7 @@ public class UserHandler implements IUserHandler {
     }
 
     @Override
+    @Transactional
     public UserResponseDto createClient(CreateClientRequestDto request) {
         var userToCreate = userRequestMapper.toUser(request);
         var userCreated = userServicePort.createClient(userToCreate);
