@@ -1,5 +1,6 @@
 package com.pragma.plazoleta.infrastructure.input.rest;
 
+import com.pragma.plazoleta.application.dto.request.user.CreateClientRequestDto;
 import com.pragma.plazoleta.application.dto.request.user.CreateEmployeeRequestDto;
 import com.pragma.plazoleta.application.dto.request.user.CreateOwnerRequestDto;
 import com.pragma.plazoleta.application.dto.response.user.UserInformationResponseDto;
@@ -98,6 +99,13 @@ public class UserRestController {
             @Valid @RequestBody CreateEmployeeRequestDto request
     ) {
         return new ResponseEntity<>(userHandler.createEmployee(request), HttpStatus.CREATED);
+    }
+
+    @PostMapping("/client")
+    public ResponseEntity<UserResponseDto> createClient(
+            @Valid @RequestBody CreateClientRequestDto request
+    ) {
+        return null;
     }
 
     @Operation(summary = "Get user by id",
