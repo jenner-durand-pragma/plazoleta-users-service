@@ -31,6 +31,11 @@ public class UserUseCase implements IUserServicePort {
     }
 
     @Override
+    public User createClient(User user) {
+        return createUserWithRole(user, Roles.CLIENT.getName());
+    }
+
+    @Override
     public User getUserById(Long id) {
         var user = userPersistencePort.findById(id);
         if (user == null) {

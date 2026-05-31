@@ -47,5 +47,4 @@ public class CreateEmployeeRequestDto {
     @NotBlank(message = "Password is required")
     @Schema(description = "Plain text password.", example = "SecurePassword123!")
     private String password;
-
 }
